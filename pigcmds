@@ -1,0 +1,23 @@
+1.
+
+A = load 'title-and-actor.txt' using PigStorage() as (title:chararray, actor:chararray, year:int, role:chararray);
+by_title = GROUP A BY title;
+
+2.
+
+B = load 'director-and-title.txt' using PigStorage() as (director:chararray, movie: chararray, year: int);
+by_director = GROUP B BY director;
+
+3.
+grouped_data = COGROUP A BY title, B BY movie;
+
+4.
+grouped2 = COGROUP B BY director, A BY actor;
+grouped2 = FOREACH grouped2 GENERATE $0, $1.movie, $2.title;
+filtered = FILTER grouped2 BY NOT IsEmpty($2);
+filtered = FILTER filtered BY NOT IsEmpty($1);
+
+5.
+joined = JOIN A by actor LEFT OUTER, B by director;
+res = FILTER joined BY B::director == A::actor AND A::title == B::movie;
+res = FOREACH res GENERATE test.actor;
