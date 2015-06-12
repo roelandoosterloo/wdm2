@@ -1,0 +1,13 @@
+Fridays!	Frequency: 1 Contains in documents: 2 
+Hello	Frequency: 2 Contains in documents: 1 2 
+I	Frequency: 2 Contains in documents: 1 2 
+Mondays!	Frequency: 1 Contains in documents: 1 
+a	Frequency: 2 Contains in documents: 1 2 
+beautiful	Frequency: 1 Contains in documents: 1 
+day.	Frequency: 2 Contains in documents: 1 2 
+hate	Frequency: 1 Contains in documents: 2 
+is	Frequency: 2 Contains in documents: 1 2 
+love	Frequency: 1 Contains in documents: 1 
+this	Frequency: 2 Contains in documents: 1 2 
+ugly	Frequency: 1 Contains in documents: 2 
+world	Frequency: 2 Contains in documents: 1 2 
