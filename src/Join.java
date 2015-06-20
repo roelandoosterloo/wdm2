@@ -78,15 +78,40 @@ public class Join {
                 
         for(RelationWritable value : values) {
             if(value.getRelation().equals("A")){ 
-                cacheA.add(new Edge(value.getA(), value.getB()));
+                if(cacheA.size() == 0){
+                    cacheA.add(new Edge(value.getA(), value.getB()));
+                }else{
+                    Edge temp = cacheA.get(cacheA.size()-1);
+                    //small check to ignore duplicates
+                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
+                        cacheA.add(new Edge(value.getA(), value.getB()));
+                    }
+                }
             } else if (value.getRelation().equals("B")) {
-                cacheB.add(new Edge(value.getA(), value.getB()));
+                if(cacheB.size() == 0){
+                    cacheB.add(new Edge(value.getA(), value.getB()));
+                }else{
+                    Edge temp = cacheB.get(cacheB.size()-1);
+                    //small check to ignore duplicates
+                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
+                        cacheB.add(new Edge(value.getA(), value.getB()));
+                    }
+                }
+                
             } else {
-                cacheC.add(new Edge(value.getA(), value.getB()));
+                if(cacheC.size() == 0){
+                    cacheC.add(new Edge(value.getA(), value.getB()));
+                }else{
+                    Edge temp = cacheC.get(cacheC.size()-1);
+                    //small check to ignore duplicates
+                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
+                        cacheC.add(new Edge(value.getA(), value.getB()));
+                    }
+                }
+                
+                
             }
         }
-        
-        
 
         
         /*for(Edge temp: cacheA){
@@ -107,12 +132,13 @@ public class Join {
                 Edge e2 = cacheB.get(j);
                 if(e1.getB() != e2.getA()){
                     continue;
-                }
-                for(int k = 0; k < cacheC.size(); k++) {
-                    Edge e3 = cacheC.get(k);
-                    if(e2.getB() == e3.getA() && e3.getB() == e1.getA()) {
-                        count++;
-                        break;
+                }else{
+                    for(int k = 0; k < cacheC.size(); k++) {
+                        Edge e3 = cacheC.get(k);
+                        if(e2.getB() == e3.getA() && e3.getB() == e1.getA()) {
+                            count++;
+                            break;
+                        }
                     }
                 }
             }
@@ -133,7 +159,7 @@ public class Join {
         job.setMapOutputValueClass(RelationWritable.class);
         
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(Text.class);
+    job.setOutputValueClass(IntWritable.class);
         
     job.setMapperClass(Map.class);
     job.setReducerClass(Reduce.class);
