@@ -25,7 +25,6 @@ public class RelationWritable implements Writable {
       b.write(out);
       relation.write(out);
     }
-    @Override
     public void readFields(DataInput in) throws IOException {
 
       a.readFields(in);
@@ -64,6 +63,10 @@ public class RelationWritable implements Writable {
     	this.relation = new Text();
     }
     
+    @Override
+    public String toString() {
+    	return a.get() + " " + b.get() + " " + relation.toString();
+    }
     
 
 }

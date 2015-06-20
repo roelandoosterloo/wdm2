@@ -23,9 +23,7 @@ public class Join {
     private final static int m = 3;
         
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-        
-    	
-    		String line = value.toString();
+        	String line = value.toString();
     		
     		String[] words =  line.split(" ");
     		
@@ -33,8 +31,8 @@ public class Join {
     			int a = Integer.parseInt(words[0]);
         		int b = Integer.parseInt(words[1]);
         		
-        	
-        		
+        		a = 1;
+        		b = 1;
         		
         		for(int i = 0 ; i <= m; i++){
         			hashKey.set(a,b,i,m);
@@ -66,58 +64,58 @@ public class Join {
     }
  } 
  
- public static class Reduce extends Reducer<JoinWritable, RelationWritable, Text, Text> {
+ public static class Reduce extends Reducer<JoinWritable, RelationWritable, JoinWritable, IntWritable> {
 
-	public List<RelationWritable> a_relation = new ArrayList<RelationWritable>();
-	public List<RelationWritable> b_relation = new ArrayList<RelationWritable>();
-	public List<RelationWritable> c_relation = new ArrayList<RelationWritable>();
+ 	private IntWritable result = new IntWritable();
 	 
     public void reduce(JoinWritable key, Iterable<RelationWritable> values, Context context) 
       throws IOException, InterruptedException {
-    	for(RelationWritable val : values) {
-    		
-    		if(val.getRelation().equals("A")){
-    			a_relation.add(val);
-    		}else if(val.getRelation().equals("B")){
-    			b_relation.add(val);
-    		}else{
-    			c_relation.add(val);
+    	int count = 0;
+    	
+    	List<Edge> cacheA = new ArrayList<Edge>();
+    	List<Edge> cacheB = new ArrayList<Edge>();
+    	List<Edge> cacheC = new ArrayList<Edge>();
+    	
+    	for(RelationWritable value : values) {
+    		if(value.getRelation().equals("A")){ 
+    			cacheA.add(new Edge(value.getA(), value.getB()));
+    		} else if (value.getRelation().equals("B")) {
+    			cacheB.add(new Edge(value.getA(), value.getB()));
+    		} else {
+    			cacheC.add(new Edge(value.getA(), value.getB()));
     		}
-    	
-    	
-    	
     	}
     	
-    	
-    		context.write(new Text(key.toString()), new Text(a_relation.size()+""));
-    		context.write(new Text(key.toString()), new Text(b_relation.size()+""));
-    		context.write(new Text(key.toString()), new Text(c_relation.size()+""));
-    	
- 
-    	/*for(RelationWritable val : a_relation){
-    		context.write(new Text("OMG ROELAND IS EEN KONING"), new Text(val.getA() + " " +  val.getB() + " " + val.getRelation()));
+    	for(int i = 0; i < cacheA.size(); i++) {
+    		Edge e1 = cacheA.get(i);
+    		for(int j = 0; j < cacheB.size(); j++) {
+    			Edge e2 = cacheB.get(j);
+    			if(e1.getB() != e2.getA()){
+    				continue;
+    			}
+    			for(int k = 0; k < cacheC.size(); k++) {
+    				Edge e3 = cacheC.get(k);
+    				if(e2.getB() == e3.getA() && e3.getB() == e1.getA()) {
+    					count++;
+    					break;
+    				}
+    			}
+    		}
     	}
-    
-    	for(RelationWritable val : b_relation){
-    		context.write(new Text("OMG ROELAND IS EEN KONING"), new Text(val.getA() + " " +  val.getB() + " " + val.getRelation()));
-    	}
-    
-    	for(RelationWritable val : c_relation){
-    		context.write(new Text("OMG ROELAND IS EEN KONING"), new Text(val.getA() + " " +  val.getB() + " " + val.getRelation()));
-    	}*/
+    	result.set(count);
     	
-    
-        
+    	context.write(key, result);
+    	
     }
  }
         
  public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
         
-        Job job = new Job(conf, "inverted");
-    
-        job.setMapOutputKeyClass(JoinWritable.class);
-        job.setMapOutputValueClass(RelationWritable.class);
+    Job job = new Job(conf, "inverted");
+
+    job.setMapOutputKeyClass(JoinWritable.class);
+    job.setMapOutputValueClass(RelationWritable.class);
         
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);

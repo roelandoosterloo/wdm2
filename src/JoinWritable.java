@@ -4,7 +4,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 public class JoinWritable implements WritableComparable {    
@@ -12,13 +11,11 @@ public class JoinWritable implements WritableComparable {
     private IntWritable b;
     private IntWritable c;
     
-    @Override
     public void write(DataOutput out) throws IOException {
       a.write(out);
       b.write(out);
       c.write(out);
     }
-    @Override
     public void readFields(DataInput in) throws IOException {
       a.readFields(in);
       b.readFields(in);
@@ -54,9 +51,7 @@ public class JoinWritable implements WritableComparable {
     	this.b = new IntWritable();
     	this.c = new IntWritable();
     }
-	@Override
 	public int compareTo(Object o) {
-		
 		if(  o instanceof JoinWritable){
 			JoinWritable temp = (JoinWritable) o;
 			if(this.a == temp.a && this.b == temp.b && this.c == temp.c){
@@ -67,13 +62,19 @@ public class JoinWritable implements WritableComparable {
 		}else{
 			return 0;
 		}
-		
-		
+	}
+	public int hashCode() {
+		final int prime = 57;
+		int result = 1;
+		result = prime * result + a.get();
+		result = prime * result + b.get();
+		result = prime * result + c.get();
+		return result;
 	}
 	
 	@Override
 	public String toString(){
-		return "key is" + a.get() + b.get() + c.get();
+		return "key is " + a.get() +" "+ b.get() +" "+ c.get();
 	}
     
     
