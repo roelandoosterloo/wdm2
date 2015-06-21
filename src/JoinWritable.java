@@ -64,12 +64,14 @@ public class JoinWritable implements WritableComparable {
 		}
 	}
 	public int hashCode() {
-		final int prime = 57;
-		int result = 1;
-		result = prime * result + a.get();
-		result = prime * result + b.get();
-		result = prime * result + c.get();
-		return result;
+		return Integer.parseInt(""+a.get()+""+b.get()+""+c.get());
+		
+//		final int prime = 57;
+//		int result = 1;
+//		result = prime * result + a.get();
+//		result = prime * result + b.get();
+//		result = prime * result + c.get();
+//		return result;
 	}
 	
 	@Override

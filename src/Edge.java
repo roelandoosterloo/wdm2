@@ -21,7 +21,7 @@ public class Edge {
 	}
 	@Override
 	public String toString() {
-		return "Edge: " + this.a + " " + this.b;
+		return this.a + " " + this.b;
 	}
 	
 	
