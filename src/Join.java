@@ -34,7 +34,7 @@ public class Join {
                 int a = Integer.parseInt(words[0]);
                 int b = Integer.parseInt(words[1]);
                 
-                for(int i = 0 ; i <= m; i++){
+                for(int i = 0 ; i < m; i++){
                     hashKey.set(a,b,i,m);
                     hashKeyRev.set(b,a,i,m);
                     relation.set(a,b,"A");
@@ -42,15 +42,15 @@ public class Join {
                     context.write(new IntWritable(hashKey.hashCode()), relation);
                     context.write(new IntWritable(hashKeyRev.hashCode()), relrev);
                     
-                    hashKey.set(a,i,b,m);
-                    hashKeyRev.set(b,i,a,m);
+                    hashKey.set(i,a,b,m);
+                    hashKeyRev.set(i,b,a,m);
                     relation.set(a,b,"B");
                     relrev.set(b,a,"B");
                     context.write(new IntWritable(hashKey.hashCode()), relation);
                     context.write(new IntWritable(hashKeyRev.hashCode()), relrev);
                     
-                    hashKey.set(i,a,b,m);
-                    hashKeyRev.set(i,b,a,m);
+                    hashKey.set(a,i,b,m);
+                    hashKeyRev.set(b,i,a,m);
                     relation.set(a,b,"C");
                     relrev.set(b, a, "C");
                     context.write(new IntWritable(hashKey.hashCode()), relation);
@@ -62,7 +62,7 @@ public class Join {
     }
  } 
  
- public static class Reduce extends Reducer<IntWritable, RelationWritable, IntWritable, Text> {
+ public static class Reduce extends Reducer<IntWritable, RelationWritable, IntWritable, IntWritable> {
 
     public List<RelationWritable> a_relation = new ArrayList<RelationWritable>();
     public List<RelationWritable> b_relation = new ArrayList<RelationWritable>();
@@ -118,9 +118,9 @@ public class Join {
         }
 
         
-        context.write(key, new Text(cacheWriter(cacheA)));
-        context.write(key, new Text(cacheWriter(cacheB)));
-        context.write(key, new Text(cacheWriter(cacheC)));
+//        context.write(key, new Text(cacheWriter(cacheA)));
+//        context.write(key, new Text(cacheWriter(cacheB)));
+//        context.write(key, new Text(cacheWriter(cacheC)));
         
 //        for(Edge temp: cacheA){
 //            context.write(key,new Text(temp.getA() + " " + temp.getB()));
@@ -143,7 +143,7 @@ public class Join {
                 }else{
                     for(int k = 0; k < cacheC.size(); k++) {
                         Edge e3 = cacheC.get(k);
-                        if(e2.getB() == e3.getA() && e3.getB() == e1.getA()) {
+                        if(e2.getB() == e3.getB() && e3.getA() == e1.getA()) {
                             count++;
                             break;
                         }
@@ -153,7 +153,7 @@ public class Join {
         }
         result.set(count);
         
-        //context.write(key, result);
+        context.write(key, result);
         
     }
     
