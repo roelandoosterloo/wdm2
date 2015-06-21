@@ -82,38 +82,18 @@ public class Join {
                 
         for(RelationWritable value : values) {
             if(value.getRelation().equals("A")){ 
-                if(cacheA.size() == 0){
+               if(!cacheA.contains(value)) {
                     cacheA.add(new Edge(value.getA(), value.getB()));
-                }else{
-                    Edge temp = cacheA.get(cacheA.size()-1);
-                    //small check to ignore duplicates
-                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
-                        cacheA.add(new Edge(value.getA(), value.getB()));
-                    }
                 }
             } else if (value.getRelation().equals("B")) {
-                if(cacheB.size() == 0){
+            	if(!cacheB.contains(value)) {
                     cacheB.add(new Edge(value.getA(), value.getB()));
-                }else{
-                    Edge temp = cacheB.get(cacheB.size()-1);
-                    //small check to ignore duplicates
-                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
-                        cacheB.add(new Edge(value.getA(), value.getB()));
-                    }
                 }
                 
             } else {
-                if(cacheC.size() == 0){
-                    cacheC.add(new Edge(value.getA(), value.getB()));
-                }else{
-                    Edge temp = cacheC.get(cacheC.size()-1);
-                    //small check to ignore duplicates
-                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
-                        cacheC.add(new Edge(value.getA(), value.getB()));
-                    }
+            	if(!cacheB.contains(value)) {
+                    cacheB.add(new Edge(value.getA(), value.getB()));
                 }
-                
-                
             }
         }
 
