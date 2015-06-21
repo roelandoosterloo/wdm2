@@ -151,7 +151,9 @@ public class Join {
  public static class IdMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	 public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		 IntWritable res = new IntWritable();
-		 res.set(Integer.parseInt(value.toString()));
+		 String temp = value.toString();
+		 int x = Character.getNumericValue(temp.charAt(temp.length()-1));
+		 res.set(x);
 		 context.write(new Text("Totaal"), res);
 	 }
  }
@@ -162,6 +164,7 @@ public class Join {
 		 int total = 0;
 		 for(IntWritable value : values) {
 			 total += value.get();
+			 //context.write(new Text("Total"), new IntWritable(total));
 		 }
 		 
 		 context.write(new Text("Total"), new IntWritable(total/6));
