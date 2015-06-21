@@ -20,6 +20,7 @@ public class Join {
     private JoinWritable hashKey = new JoinWritable();
     private JoinWritable hashKeyRev = new JoinWritable();
     private RelationWritable relation = new RelationWritable();
+    private RelationWritable relationRev = new RelationWritable();
     private final static int m = 3;
         
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -35,22 +36,16 @@ public class Join {
                 
                 for(int i = 0 ; i <= m; i++){
                     hashKey.set(a,b,i,m);
-                    hashKeyRev.set(b,a,i,m);
                     relation.set(a,b,"A");
                     context.write(new IntWritable(hashKey.hashCode()), relation);
-                    context.write(new IntWritable(hashKeyRev.hashCode()), relation);
                     
                     hashKey.set(a,i,b,m);
-                    hashKeyRev.set(b,i,a,m);
                     relation.set(a,b,"B");
                     context.write(new IntWritable(hashKey.hashCode()), relation);
-                    context.write(new IntWritable(hashKeyRev.hashCode()), relation);
                     
                     hashKey.set(i,a,b,m);
-                    hashKeyRev.set(i,b,a,m);
                     relation.set(a,b,"C");
                     context.write(new IntWritable(hashKey.hashCode()), relation);
-                    context.write(new IntWritable(hashKeyRev.hashCode()), relation);
                 }
  
             }
@@ -58,7 +53,7 @@ public class Join {
     }
  } 
  
- public static class Reduce extends Reducer<IntWritable, RelationWritable, IntWritable, IntWritable> {
+ public static class Reduce extends Reducer<IntWritable, RelationWritable, IntWritable, Text> {
 
     public List<RelationWritable> a_relation = new ArrayList<RelationWritable>();
     public List<RelationWritable> b_relation = new ArrayList<RelationWritable>();
@@ -78,64 +73,39 @@ public class Join {
                 
         for(RelationWritable value : values) {
             if(value.getRelation().equals("A")){ 
-                if(cacheA.size() == 0){
-                    cacheA.add(new Edge(value.getA(), value.getB()));
-                }else{
-                    Edge temp = cacheA.get(cacheA.size()-1);
-                    //small check to ignore duplicates
-                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
-                        cacheA.add(new Edge(value.getA(), value.getB()));
-                    }
+                Edge e = new Edge(value.getA(), value.getB());
+                if(!cacheA.contains(e)){
+                    cacheA.add(e);
                 }
             } else if (value.getRelation().equals("B")) {
-                if(cacheB.size() == 0){
-                    cacheB.add(new Edge(value.getA(), value.getB()));
-                }else{
-                    Edge temp = cacheB.get(cacheB.size()-1);
-                    //small check to ignore duplicates
-                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
-                        cacheB.add(new Edge(value.getA(), value.getB()));
-                    }
-                }
-                
+            	Edge e = new Edge(value.getA(), value.getB());
+                if(!cacheB.contains(e)){
+                    cacheB.add(e);
+                }                
             } else {
-                if(cacheC.size() == 0){
-                    cacheC.add(new Edge(value.getA(), value.getB()));
-                }else{
-                    Edge temp = cacheC.get(cacheC.size()-1);
-                    //small check to ignore duplicates
-                    if((temp.getA() != value.getA()) && temp.getB() != value.getB()){
-                        cacheC.add(new Edge(value.getA(), value.getB()));
-                    }
+            	Edge e = new Edge(value.getA(), value.getB());
+                if(!cacheC.contains(e)){
+                    cacheC.add(e);
                 }
-                
-                
             }
         }
-
-        
-        /*for(Edge temp: cacheA){
-            context.write(key,new Text(temp.getA() + " " + temp.getB()));
-        }
-        
-        for(Edge temp: cacheB){
-            context.write(key,new Text(temp.getA() + " " + temp.getB()));
-        }
-        
-        for(Edge temp: cacheC){
-            context.write(key,new Text(temp.getA() + " " + temp.getB()));
-        }*/
+        context.write(key, new Text(printCache(cacheA)));
+        context.write(key, new Text(printCache(cacheB)));
+        context.write(key, new Text(printCache(cacheC)));
                 
         for(int i = 0; i < cacheA.size(); i++) {
             Edge e1 = cacheA.get(i);
+            Triangle t = new Triangle();
+            t.setA(e1);
             for(int j = 0; j < cacheB.size(); j++) {
                 Edge e2 = cacheB.get(j);
-                if(e1.getB() != e2.getA()){
+                if(!t.canSetB(e2)){
                     continue;
-                }else{
+                } else {
+                	t.setB(e2);
                     for(int k = 0; k < cacheC.size(); k++) {
                         Edge e3 = cacheC.get(k);
-                        if(e2.getB() == e3.getA() && e3.getB() == e1.getA()) {
+                        if(t.canSetC(e3)) {
                             count++;
                             break;
                         }
@@ -145,19 +115,40 @@ public class Join {
         }
         result.set(count);
         
-        context.write(key, result);
+//        context.write(new Text("Triangles"), result);
         
     }
+    
+    private String printCache(List<Edge> cache) {
+    	String result = "";
+    	for(int i = 0; i < cache.size(); i++) {
+    		result = result + cache.get(i).toString() + ",";
+    	}
+    	return result;
+    }
  }
-        
+       
+ public static class SumReduce extends Reducer<Text, IntWritable, Text, IntWritable> {
+	 public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+		      throws IOException, InterruptedException {
+		 int sum = 0;
+		 IntWritable result = new IntWritable();
+		 for(IntWritable value : values) {
+			 sum += value.get();
+		 }
+		 result.set(sum);
+		 context.write(key, result);
+	 }
+ }
+ 
  public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
         
-        Job job = Job.getInstance(conf);
+    Job job = Job.getInstance(conf);
+
+    job.setMapOutputKeyClass(IntWritable.class);
+    job.setMapOutputValueClass(RelationWritable.class);
     
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(RelationWritable.class);
-        
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
         
@@ -168,7 +159,7 @@ public class Join {
         
     job.setInputFormatClass(TextInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
-  
+    
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
         

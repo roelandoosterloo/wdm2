@@ -24,5 +24,14 @@ public class Edge {
 		return "Edge: " + this.a + " " + this.b;
 	}
 	
+	@Override
+	public boolean equals(Object other) {
+		if( other instanceof Edge) {
+			Edge that = (Edge)other;
+			return that.getA() == this.getA() && that.getB() == this.getB();
+		}
+		return false;
+	}
+	
 	
 }
